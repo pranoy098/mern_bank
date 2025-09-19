@@ -1,22 +1,40 @@
-import { Card, Form, Input, Button, Table } from "antd";
+import { Card, Form, Input, Button, message, Table, Image } from "antd";
 import Adminlayout from "../../Layout/Adminlayout";
 import {
   DeleteOutlined,
   EditOutlined,
   EyeInvisibleOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { trimData, http } from "../../../modules/modules";
 
 import swal from "sweetalert";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const { Item } = Form;
 
 const NewEmployee = () => {
   // states collection
   const [empForm] = Form.useForm();
+  const [messageApi, context] = message.useMessage();
   const [loading, setLoading] = useState(false);
   const [photo, setPhoto] = useState(null);
+  const [allEmployee, setAllEmployee] = useState([]);
+
+  //get all employee data
+  useEffect(() => {
+    const fetcher = async () => {
+      try {
+        const httpReq = http();
+        const { data } = await httpReq.get("/api/users");
+        console.log(data);
+        setAllEmployee(data.data);
+      } catch (err) {
+        messageApi.error("Unable to fetch data!");
+      }
+    };
+    fetcher();
+  }, []);
 
   // create new employee
   const onFinish = async (values) => {
@@ -35,7 +53,8 @@ const NewEmployee = () => {
 
       const res = await httpReq.post(`/api/send-email`, obj);
       console.log(res);
-      swal("Success", "Employee created", "success");
+      messageApi.success("Employee created!");
+      // swal("Success", "Employee created", "success");
       empForm.resetFields();
       setPhoto(null);
     } catch (err) {
@@ -79,6 +98,14 @@ const NewEmployee = () => {
     {
       title: "Profile",
       key: "profile",
+      render: (src, obj) => (
+        <Image
+          src={`${import.meta.env.VITE_BASEURL}/${obj.profile}`}
+          className="rounded-full"
+          width={40}
+          height={40}
+        />
+      ),
     },
     {
       title: "Fullname",
@@ -103,12 +130,17 @@ const NewEmployee = () => {
     {
       title: "Action",
       key: "action",
-      render: () => (
+      fixed: "right",
+      render: (_, obj) => (
         <div className="flex gap-1">
           <Button
             type="text"
-            className="!bg-pink-100 !text-pink-500 !font-bold"
-            icon={<EyeInvisibleOutlined />}
+            className={`${
+              obj.isActive
+                ? "!bg-indigo-100 !text-indigo-500 !font-bold"
+                : "!bg-pink-100 !text-pink-500 !font-bold"
+            }`}
+            icon={obj.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />}
           />
           <Button
             type="text"
@@ -126,6 +158,7 @@ const NewEmployee = () => {
   ];
   return (
     <Adminlayout>
+      {context}
       <div className="grid md:grid-cols-3 gap-3">
         <Card title="Add new employee">
           <Form form={empForm} onFinish={onFinish} layout="vertical">
@@ -169,8 +202,16 @@ const NewEmployee = () => {
             </Item>
           </Form>
         </Card>
-        <Card className="md:col-span-2" title="Employee list">
-          <Table dataSource={[{}]} columns={columns} />
+        <Card
+          className="md:col-span-2"
+          title="Employee list"
+          style={{ overflowX: "auto" }}
+        >
+          <Table
+            dataSource={allEmployee}
+            columns={columns}
+            scroll={{ x: "max-content" }}
+          />
         </Card>
       </div>
     </Adminlayout>

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import {
+  BranchesOutlined,
   DashboardOutlined,
   DesktopOutlined,
   FileOutlined,
+  GiftOutlined,
   PieChartOutlined,
   TeamOutlined,
   UserOutlined,
@@ -23,6 +25,16 @@ const items = [
     key: "/admin",
     icon: <DashboardOutlined />,
     label: <Link to="/admin">Dashboard</Link>,
+  },
+  {
+    key: "/admin/branding",
+    icon: <GiftOutlined />,
+    label: <Link to="/admin/branding">Branding</Link>,
+  },
+  {
+    key: "/admin/branch",
+    icon: <BranchesOutlined />,
+    label: <Link to="/admin/branch">Branch</Link>,
   },
   {
     key: "/admin/new-employee",

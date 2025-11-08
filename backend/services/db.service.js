@@ -1,10 +1,12 @@
 require("dotenv").config();
 const mongo = require("mongoose");
 
-const url = process.env.DB_URL;
+const url = process.env.DB_URL_CLOUD;
 
-mongo.connect(url).then(()=>console.log("Database connected")).catch((err)=>console.log(err));
-
+mongo
+  .connect(url)
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.log(err));
 
 const findAllRecord = async (schema) => {
   const dbRes = await schema.find();
@@ -17,12 +19,12 @@ const createNewRecord = async (data, schema) => {
 };
 
 const updateRecord = async (id, data, schema) => {
-  const dbRes = await schema.findByAndUpdate(id, data, { new: true });
+  const dbRes = await schema.findByIdAndUpdate(id, data, { new: true });
   return dbRes;
 };
 
 const deleteRecord = async (id, schema) => {
-  const dbRes = await new schema.findByIdAndDelete(id);
+  const dbRes = await schema.findByIdAndDelete(id);
   return dbRes;
 };
 

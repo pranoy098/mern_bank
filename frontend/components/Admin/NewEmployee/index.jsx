@@ -1,4 +1,13 @@
-import { Card, Form, Input, Button, message, Table, Image } from "antd";
+import {
+  Card,
+  Form,
+  Input,
+  Button,
+  message,
+  Table,
+  Image,
+  Popconfirm,
+} from "antd";
 import Adminlayout from "../../Layout/Adminlayout";
 import {
   DeleteOutlined,
@@ -20,6 +29,8 @@ const NewEmployee = () => {
   const [loading, setLoading] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [allEmployee, setAllEmployee] = useState([]);
+  const [edit, setEdit] = useState(null);
+  const [no, setNo] = useState(0);
 
   //get all employee data
   useEffect(() => {
@@ -34,7 +45,7 @@ const NewEmployee = () => {
       }
     };
     fetcher();
-  }, []);
+  }, [no]);
 
   // create new employee
   const onFinish = async (values) => {
@@ -42,6 +53,7 @@ const NewEmployee = () => {
       setLoading(true);
       let finalObj = trimData(values);
       finalObj.profile = photo ? photo : "bankImages/avatar.jpg ";
+      finalObj.key = finalObj.email;
       const httpReq = http();
       const { data } = await httpReq.post(`/api/users`, finalObj);
       console.log(data);
@@ -57,6 +69,7 @@ const NewEmployee = () => {
       // swal("Success", "Employee created", "success");
       empForm.resetFields();
       setPhoto(null);
+      setNo(no + 1);
     } catch (err) {
       console.log(err);
       console.log(err?.response?.data?.err?.code);
@@ -72,6 +85,66 @@ const NewEmployee = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // update isActive status
+  const updateIsActive = async (id, isActive) => {
+    try {
+      const obj = {
+        isActive: !isActive,
+      };
+      const httpReq = http();
+      const { data } = await httpReq.put(`/api/users/${id}`, obj);
+      messageApi.success("Record updated successfully!");
+      setNo(no + 1);
+    } catch (err) {
+      messageApi.error("Unable to update isActive!");
+    }
+  };
+
+  // update employee
+  const onEditUser = async (obj) => {
+    try {
+      console.log(obj);
+      setEdit(obj);
+      empForm.setFieldsValue(obj);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const onUpdate = async (values) => {
+    try {
+      setLoading(true);
+      let finalObj = trimData(values);
+
+      if (photo) {
+        finalObj.profile = photo;
+      }
+      console.log(finalObj);
+      const httpReq = http();
+      await httpReq.put(`/api/users/${edit._id}`, finalObj);
+      messageApi.success("Employee updated successfully!");
+      setNo(no + 1);
+      setEdit(null);
+      empForm.resetFields();
+    } catch (err) {
+      messageApi.error("Unable to update employee!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // delete employee
+  const onDeleteUser = async (id) => {
+    try {
+      const httpReq = http();
+      await httpReq.delete(`/api/users/${id}`);
+      messageApi.success("Employee deleted successfully!");
+      setNo(no + 1);
+    } catch (err) {
+      messageApi.error("Unable to delete user!");
     }
   };
 
@@ -133,25 +206,46 @@ const NewEmployee = () => {
       fixed: "right",
       render: (_, obj) => (
         <div className="flex gap-1">
-          <Button
-            type="text"
-            className={`${
-              obj.isActive
-                ? "!bg-indigo-100 !text-indigo-500 !font-bold"
-                : "!bg-pink-100 !text-pink-500 !font-bold"
-            }`}
-            icon={obj.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-          />
-          <Button
-            type="text"
-            className="!bg-green-100 !text-green-500 !font-bold"
-            icon={<EditOutlined />}
-          />
-          <Button
-            type="text"
-            className="!bg-rose-100 !text-rose-500 !font-bold"
-            icon={<DeleteOutlined />}
-          />
+          <Popconfirm
+            title="Are you sure?"
+            description="Once you update, you can also re-update!"
+            onCancel={() => messageApi.info("No changes occur!")}
+            onConfirm={() => updateIsActive(obj._id, obj.isActive)}
+          >
+            <Button
+              type="text"
+              className={`${
+                obj.isActive
+                  ? "!bg-indigo-100 !text-indigo-500 !font-bold"
+                  : "!bg-pink-100 !text-pink-500 !font-bold"
+              }`}
+              icon={obj.isActive ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+            />
+          </Popconfirm>
+          <Popconfirm
+            title="Are you sure?"
+            description="Once you update, you can also re-update!"
+            onCancel={() => messageApi.info("No changes occur!")}
+            onConfirm={() => onEditUser(obj)}
+          >
+            <Button
+              type="text"
+              className="!bg-green-100 !text-green-500 !font-bold"
+              icon={<EditOutlined />}
+            />
+          </Popconfirm>
+          <Popconfirm
+            title="Are you sure?"
+            description="Once deleted, you cannot restore!"
+            onCancel={() => messageApi.info("Your data is safe!")}
+            onConfirm={() => onDeleteUser(obj._id)}
+          >
+            <Button
+              type="text"
+              className="!bg-rose-100 !text-rose-500 !font-bold"
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
         </div>
       ),
     },
@@ -161,7 +255,11 @@ const NewEmployee = () => {
       {context}
       <div className="grid md:grid-cols-3 gap-3">
         <Card title="Add new employee">
-          <Form form={empForm} onFinish={onFinish} layout="vertical">
+          <Form
+            form={empForm}
+            onFinish={edit ? onUpdate : onFinish}
+            layout="vertical"
+          >
             <Item label="Profile" name="xyz">
               <Input onChange={handleUpload} type="file" />
             </Item>
@@ -184,21 +282,32 @@ const NewEmployee = () => {
                 label="Password"
                 rules={[{ required: true }]}
               >
-                <Input />
+                <Input disabled={edit ? true : false} />
               </Item>
             </div>
             <Item>
               <Input.TextArea />
             </Item>
             <Item>
-              <Button
-                loading={loading}
-                type="text"
-                htmlType="submit"
-                className="!bg-blue-500 !text-white !font-bold !w-full"
-              >
-                Submit
-              </Button>
+              {edit ? (
+                <Button
+                  loading={loading}
+                  type="text"
+                  htmlType="submit"
+                  className="!bg-rose-500 !text-white !font-bold !w-full"
+                >
+                  Update
+                </Button>
+              ) : (
+                <Button
+                  loading={loading}
+                  type="text"
+                  htmlType="submit"
+                  className="!bg-blue-500 !text-white !font-bold !w-full"
+                >
+                  Submit
+                </Button>
+              )}
             </Item>
           </Form>
         </Card>

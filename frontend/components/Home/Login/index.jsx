@@ -1,14 +1,55 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Card, Form, Input, Button } from "antd";
+import { Card, Form, Input, Button, message } from "antd";
+import { trimData, http } from "../../../modules/modules";
+import Cookie from "universal-cookie";
+import { useNavigate } from "react-router-dom";
 
 const { Item } = Form;
 
 const Login = () => {
-  const onFinish = (values) => {
-    console.log(values);
+  const cookies = new Cookie();
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 3);
+
+  const navigate = useNavigate();
+  const [messageApi, context] = message.useMessage();
+  const onFinish = async (values) => {
+    try {
+      const finalObj = trimData(values);
+      const httpReq = http();
+      const { data } = await httpReq.post("/api/login", finalObj);
+      console.log(data);
+      if (data?.isLogged && data?.userType === "admin") {
+        const { token } = data;
+        cookies.set("authToken", token, {
+          path: "/",
+          expires,
+        });
+        navigate("/admin");
+      } else if (data?.isLogged && data?.userType === "employee") {
+        const { token } = data;
+        cookies.set("authToken", token, {
+          path: "/",
+          expires,
+        });
+        navigate("/employee");
+      } else if (data?.isLogged && data?.userType === "customer") {
+        const { token } = data;
+        cookies.set("authToken", token, {
+          path: "/",
+          expires,
+        });
+        navigate("/customer");
+      } else {
+        messageApi.error("Invalid user type");
+      }
+    } catch (error) {
+      messageApi.error(error?.response?.data?.message);
+    }
   };
   return (
     <div className="flex">
+      {context}
       <div className="w-1/2 hidden md:flex items-center justify-center">
         <img src="/bank-img.jpg" alt="Bank" className="w-4/5 object-contain" />
       </div>
@@ -18,14 +59,14 @@ const Login = () => {
             Bank Login
           </h2>
           <Form name="login" onFinish={onFinish} layout="vertical">
-            <Item name="username" label="Username" rules={[{ required: true }]}>
+            <Item name="email" label="Username" rules={[{ required: true }]}>
               <Input
                 prefix={<UserOutlined />}
                 placeholder="Enter your username"
               />
             </Item>
             <Item name="password" label="Password" rules={[{ required: true }]}>
-              <Input
+              <Input.Password
                 prefix={<LockOutlined />}
                 placeholder="Enter your password"
               />

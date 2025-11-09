@@ -7,6 +7,7 @@ import {
   Table,
   Image,
   Popconfirm,
+  Select,
 } from "antd";
 import Adminlayout from "../../Layout/Adminlayout";
 import {
@@ -14,11 +15,13 @@ import {
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { trimData, http } from "../../../modules/modules";
-
+import { trimData, http, fetchData } from "../../../modules/modules";
+import useSWR from "swr";
 import swal from "sweetalert";
 import { useEffect, useState } from "react";
+import Search from "antd/es/transfer/search";
 
 const { Item } = Form;
 
@@ -29,8 +32,29 @@ const NewEmployee = () => {
   const [loading, setLoading] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [allEmployee, setAllEmployee] = useState([]);
+  const [finalEmployee, setFinalEmployee] = useState([]);
+  const [allBranch, setAllBranch] = useState([]);
   const [edit, setEdit] = useState(null);
   const [no, setNo] = useState(0);
+
+  // get branch data
+  const { data: branches, error: bError } = useSWR("/api/branch", fetchData, {
+    revalidateOnFocus: false,
+    refreshInterval: 1200000,
+    revalidateOnReconnect: false,
+  });
+
+  console.log(branches, bError);
+  useEffect(() => {
+    let filter =
+      branches &&
+      branches?.data.map((item) => ({
+        value: item.branchName,
+        label: item.branchName,
+        key: item.key,
+      }));
+    setAllBranch(filter);
+  }, [branches]);
 
   //get all employee data
   useEffect(() => {
@@ -40,6 +64,7 @@ const NewEmployee = () => {
         const { data } = await httpReq.get("/api/users");
         console.log(data);
         setAllEmployee(data.data);
+        setFinalEmployee(data.data);
       } catch (err) {
         messageApi.error("Unable to fetch data!");
       }
@@ -54,6 +79,7 @@ const NewEmployee = () => {
       let finalObj = trimData(values);
       finalObj.profile = photo ? photo : "bankImages/avatar.jpg ";
       finalObj.key = finalObj.email;
+      finalObj.userType = "employee";
       const httpReq = http();
       const { data } = await httpReq.post(`/api/users`, finalObj);
       console.log(data);
@@ -166,6 +192,31 @@ const NewEmployee = () => {
     }
   };
 
+  // search handler
+  const onSearch = (e) => {
+    let value = e.target.value.trim().toLowerCase();
+    console.log("filter value", value);
+    let filter =
+      finalEmployee &&
+      finalEmployee.filter((emp) => {
+        console.log("emp", emp);
+        if (emp.fullname.toLowerCase().indexOf(value) != -1) {
+          return emp;
+        } else if (emp.userType.toLowerCase().indexOf(value) != -1) {
+          return emp;
+        } else if (emp.email.toLowerCase().indexOf(value) != -1) {
+          return emp;
+        } else if (emp.branch.toLowerCase().indexOf(value) != -1) {
+          return emp;
+        } else if (emp.mobile.toLowerCase().indexOf(value) != -1) {
+          return emp;
+        } else if (emp.address.toLowerCase().indexOf(value) != -1) {
+          return emp;
+        }
+      });
+    setAllEmployee(filter);
+  };
+
   // columns for table
   const columns = [
     {
@@ -179,6 +230,25 @@ const NewEmployee = () => {
           height={40}
         />
       ),
+    },
+    {
+      title: "User type",
+      dataIndex: "userType",
+      key: "userType",
+      render: (text) => {
+        if (text === "admin") {
+          return <span className=" capitalize text-indigo-500">{text}</span>;
+        } else if (text === "employee") {
+          return <span className=" capitalize text-green-500">{text}</span>;
+        } else {
+          return <span className=" capitalize text-red-500">{text}</span>;
+        }
+      },
+    },
+    {
+      title: "Branch",
+      dataIndex: "branch",
+      key: "branch",
     },
     {
       title: "Fullname",
@@ -260,6 +330,13 @@ const NewEmployee = () => {
             onFinish={edit ? onUpdate : onFinish}
             layout="vertical"
           >
+            <Item
+              name="branch"
+              label="Select Branch"
+              rules={[{ required: true }]}
+            >
+              <Select placeholder="Select branch" options={allBranch} />
+            </Item>
             <Item label="Profile" name="xyz">
               <Input onChange={handleUpload} type="file" />
             </Item>
@@ -285,7 +362,7 @@ const NewEmployee = () => {
                 <Input disabled={edit ? true : false} />
               </Item>
             </div>
-            <Item>
+            <Item name="address" label="Branch Address">
               <Input.TextArea />
             </Item>
             <Item>
@@ -315,6 +392,15 @@ const NewEmployee = () => {
           className="md:col-span-2"
           title="Employee list"
           style={{ overflowX: "auto" }}
+          extra={
+            <div>
+              <Input
+                placeholder="Search by all"
+                prefix={<SearchOutlined />}
+                onChange={onSearch}
+              />
+            </div>
+          }
         >
           <Table
             dataSource={allEmployee}

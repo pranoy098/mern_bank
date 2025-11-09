@@ -23,32 +23,12 @@ function getItem(label, key, icon, children) {
 }
 const items = [
   {
-    key: "/admin",
+    key: "/employee",
     icon: <DashboardOutlined />,
-    label: <Link to="/admin">Dashboard</Link>,
-  },
-  {
-    key: "/admin/branding",
-    icon: <GiftOutlined />,
-    label: <Link to="/admin/branding">Branding</Link>,
-  },
-  {
-    key: "/admin/branch",
-    icon: <BranchesOutlined />,
-    label: <Link to="/admin/branch">Branch</Link>,
-  },
-  {
-    key: "/admin/currency",
-    icon: <DollarCircleOutlined />,
-    label: <Link to="/admin/currency">Currency</Link>,
-  },
-  {
-    key: "/admin/new-employee",
-    icon: <UserOutlined />,
-    label: <Link to="/admin/new-employee">New Employee</Link>,
+    label: <Link to="/employee">Dashboard</Link>,
   },
 ];
-const Adminlayout = ({ children }) => {
+const Employeelayout = ({ children }) => {
   const { pathname } = useLocation();
   console.log(pathname);
 
@@ -81,4 +61,4 @@ const Adminlayout = ({ children }) => {
     </Layout>
   );
 };
-export default Adminlayout;
+export default Employeelayout;

@@ -14,6 +14,7 @@ const brandingRouter = require("./routes/branding.routes");
 const branchRouter = require("./routes/branch.routes");
 const currencyRouter = require("./routes/currency.routes");
 const loginRouter = require("./routes/login.routes");
+const verifyRouter = require("./routes/verify.routes");
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // route level middleware
+app.use("/api/verify-token", verifyRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/send-email", emailRouter);

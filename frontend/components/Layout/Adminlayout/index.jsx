@@ -6,12 +6,17 @@ import {
   DollarCircleOutlined,
   FileOutlined,
   GiftOutlined,
+  LogoutOutlined,
   PieChartOutlined,
   TeamOutlined,
+  UserAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Link, useLocation } from "react-router-dom";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Cookies from "universal-cookie";
+import { Breadcrumb, Button, Layout, Menu, theme } from "antd";
+
+const cookies = new Cookies();
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
   return {
@@ -21,36 +26,63 @@ function getItem(label, key, icon, children) {
     label,
   };
 }
-const items = [
-  {
-    key: "/admin",
-    icon: <DashboardOutlined />,
-    label: <Link to="/admin">Dashboard</Link>,
-  },
-  {
-    key: "/admin/branding",
-    icon: <GiftOutlined />,
-    label: <Link to="/admin/branding">Branding</Link>,
-  },
-  {
-    key: "/admin/branch",
-    icon: <BranchesOutlined />,
-    label: <Link to="/admin/branch">Branch</Link>,
-  },
-  {
-    key: "/admin/currency",
-    icon: <DollarCircleOutlined />,
-    label: <Link to="/admin/currency">Currency</Link>,
-  },
-  {
-    key: "/admin/new-employee",
-    icon: <UserOutlined />,
-    label: <Link to="/admin/new-employee">New Employee</Link>,
-  },
-];
+
 const Adminlayout = ({ children }) => {
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   console.log(pathname);
+
+  const logoutFunc = () => {
+    sessionStorage.removeItem("userInfo");
+    cookies.remove("authToken");
+    navigate("/");
+  };
+
+  const items = [
+    {
+      key: "/admin",
+      icon: <DashboardOutlined />,
+      label: <Link to="/admin">Dashboard</Link>,
+    },
+    {
+      key: "/admin/branding",
+      icon: <GiftOutlined />,
+      label: <Link to="/admin/branding">Branding</Link>,
+    },
+    {
+      key: "/admin/branch",
+      icon: <BranchesOutlined />,
+      label: <Link to="/admin/branch">Branch</Link>,
+    },
+    {
+      key: "/admin/currency",
+      icon: <DollarCircleOutlined />,
+      label: <Link to="/admin/currency">Currency</Link>,
+    },
+    {
+      key: "/admin/new-employee",
+      icon: <UserOutlined />,
+      label: <Link to="/admin/new-employee">New Employee</Link>,
+    },
+    {
+      key: "/admin/new-account",
+      icon: <UserAddOutlined />,
+      label: <Link to="/admin/new-account">New Account</Link>,
+    },
+    {
+      key: "/admin/logout",
+      icon: <LogoutOutlined />,
+      label: (
+        <Button
+          type="text"
+          className="!text-gray-300 !font-semibold"
+          onClick={logoutFunc}
+        >
+          Logout
+        </Button>
+      ),
+    },
+  ];
 
   const [collapsed, setCollapsed] = useState(false);
   const {

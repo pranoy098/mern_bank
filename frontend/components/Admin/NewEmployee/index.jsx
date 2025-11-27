@@ -17,7 +17,12 @@ import {
   EyeOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { trimData, http, fetchData } from "../../../modules/modules";
+import {
+  trimData,
+  http,
+  fetchData,
+  uploadFile,
+} from "../../../modules/modules";
 import useSWR from "swr";
 import swal from "sweetalert";
 import { useEffect, useState } from "react";
@@ -63,7 +68,9 @@ const NewEmployee = () => {
         const httpReq = http();
         const { data } = await httpReq.get("/api/users");
         console.log(data);
-        setAllEmployee(data.data);
+        setAllEmployee(
+          data?.data.filter((item) => item.userType !== "customer")
+        );
         setFinalEmployee(data.data);
       } catch (err) {
         messageApi.error("Unable to fetch data!");
@@ -144,7 +151,7 @@ const NewEmployee = () => {
     try {
       setLoading(true);
       let finalObj = trimData(values);
-
+      delete finalObj.password;
       if (photo) {
         finalObj.profile = photo;
       }
@@ -154,6 +161,7 @@ const NewEmployee = () => {
       messageApi.success("Employee updated successfully!");
       setNo(no + 1);
       setEdit(null);
+      setPhoto(null);
       empForm.resetFields();
     } catch (err) {
       messageApi.error("Unable to update employee!");
@@ -176,19 +184,14 @@ const NewEmployee = () => {
 
   // handle upload
   const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    const folderName = "employeePhoto";
+
     try {
-      console.log(e.target.files[0]);
-      let file = e.target.files[0];
-      const formData = new FormData();
-      formData.append("photo", file);
-      const httpReq = http();
-      const { data } = await httpReq.post("/api/upload", formData);
-      console.log(data);
-      setPhoto(data.filePath);
-      swal("Success", "File uploaded", "success");
+      const result = await uploadFile(file, folderName);
+      setPhoto(result.filePath);
     } catch (err) {
-      console.log(err);
-      swal("Faile", "Unable to upload", "warning");
+      messageApi.error("File upload failed");
     }
   };
 
@@ -352,7 +355,7 @@ const NewEmployee = () => {
                 <Input type="number" />
               </Item>
               <Item name="email" label="Email" rules={[{ required: true }]}>
-                <Input />
+                <Input disabled={edit ? true : false} />
               </Item>
               <Item
                 name="password"

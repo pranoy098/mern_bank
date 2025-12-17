@@ -21,6 +21,10 @@ const EmpNewAccount = lazy(() =>
 const AdminNewAccount = lazy(() =>
   import("../components/Admin/AdminNewAccount")
 );
+const AdminTransaction = lazy(() =>
+  import("../components/Admin/AdminTransaction")
+);
+import CustomerTransactions from "../components/Customer/Transactions";
 
 const App = () => {
   return (
@@ -39,6 +43,7 @@ const App = () => {
             <Route path="currency" element={<Currency />} />
             <Route path="new-employee" element={<NewEmployee />} />
             <Route path="new-account" element={<AdminNewAccount />} />
+            <Route path="new-transaction" element={<AdminTransaction />} />
             <Route path="*" element={<PageNotFound />} />
           </Route>
 
@@ -60,7 +65,7 @@ const App = () => {
           >
             <Route index element={<CustomerDashboard />} />
             <Route path="new-account" element={<EmpNewAccount />} />
-            {/* <Route path="transaction" element={<EmpTransaction />} /> */}
+            <Route path="transaction" element={<CustomerTransactions />} />
             <Route path="*" element={<PageNotFound />} />
           </Route>
 

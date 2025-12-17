@@ -1,16 +1,16 @@
-import EmployeeLayout from "../../Layout/Employeelayout";
+import Adminlayout from "../../Layout/Adminlayout";
 import NewTransaction from "../../Shared/NewTransaction";
 import TransactionTable from "../../Shared/TransactionTable";
 
-const EmpTransaction = () => {
+const AdminTransaction = () => {
   // Get user info from local storage
   const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
 
   return (
-    <EmployeeLayout>
+    <Adminlayout>
       <NewTransaction />
       <TransactionTable query={{ branch: userInfo?.branch }} />
-    </EmployeeLayout>
+    </Adminlayout>
   );
 };
-export default EmpTransaction;
+export default AdminTransaction;

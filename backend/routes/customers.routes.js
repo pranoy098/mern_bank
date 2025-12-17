@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controller/controller");
 const customersSchema = require("../model/customers.model");
+const { verifyToken } = require("../middlewares/middleware");
 
-router.get("/", (req, res) => {
+router.get("/", verifyToken, (req, res) => {
   controller.getData(req, res, customersSchema);
 });
 

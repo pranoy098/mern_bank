@@ -2,6 +2,7 @@ require("dotenv").config();
 const dbService = require("../services/db.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Customers = require("../model/customers.model");
 
 const loginFunc = async (req, res, schema) => {
   try {
@@ -17,10 +18,21 @@ const loginFunc = async (req, res, schema) => {
       if (isMatch) {
         if (dbRes.isActive) {
           delete dbRes._doc.password; // Remove password before sending response
-          const payload = {
-            ...dbRes._doc,
-            _id: dbRes._id.toString(),
-          };
+          const db = await Customers.findOne(
+            { email },
+            { _id: 0, accountNo: 1 }
+          );
+          let payload = null;
+          db
+            ? (payload = {
+                ...dbRes._doc,
+                _id: dbRes._id.toString(),
+                accountNo: db.accountNo,
+              })
+            : (payload = {
+                ...dbRes._doc,
+                _id: dbRes._id.toString(),
+              });
           const token = await jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: "3h",
           });

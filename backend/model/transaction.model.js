@@ -4,12 +4,13 @@ const { Schema } = mongo;
 const transactionSchema = new Schema(
   {
     transactionType: String,
-    transactionAmount: String,
+    transactionAmount: Number,
     reference: String,
     currentBalance: Number,
     accountNo: Number,
     key: String,
     customerId: String,
+    branch: String,
   },
   { timestamps: true }
 );

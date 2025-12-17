@@ -70,6 +70,11 @@ const Adminlayout = ({ children }) => {
       label: <Link to="/admin/new-account">New Account</Link>,
     },
     {
+      key: "/admin/new-transaction",
+      icon: <UserAddOutlined />,
+      label: <Link to="/admin/new-transaction">New Transaction</Link>,
+    },
+    {
       key: "/admin/logout",
       icon: <LogoutOutlined />,
       label: (

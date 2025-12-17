@@ -27,11 +27,15 @@ import useSWR from "swr";
 import swal from "sweetalert";
 import { useEffect, useState } from "react";
 import Search from "antd/es/transfer/search";
+import Cookies from "universal-cookie";
+const cookies = new Cookies();
 
 const { Item } = Form;
 
 const NewEmployee = () => {
+  const token = cookies.get("authToken");
   // states collection
+
   const [empForm] = Form.useForm();
   const [messageApi, context] = message.useMessage();
   const [loading, setLoading] = useState(false);
@@ -65,7 +69,7 @@ const NewEmployee = () => {
   useEffect(() => {
     const fetcher = async () => {
       try {
-        const httpReq = http();
+        const httpReq = http(token);
         const { data } = await httpReq.get("/api/users");
         console.log(data);
         setAllEmployee(
@@ -127,7 +131,7 @@ const NewEmployee = () => {
       const obj = {
         isActive: !isActive,
       };
-      const httpReq = http();
+      const httpReq = http(token);
       const { data } = await httpReq.put(`/api/users/${id}`, obj);
       messageApi.success("Record updated successfully!");
       setNo(no + 1);
@@ -156,7 +160,7 @@ const NewEmployee = () => {
         finalObj.profile = photo;
       }
       console.log(finalObj);
-      const httpReq = http();
+      const httpReq = http(token);
       await httpReq.put(`/api/users/${edit._id}`, finalObj);
       messageApi.success("Employee updated successfully!");
       setNo(no + 1);
@@ -173,7 +177,7 @@ const NewEmployee = () => {
   // delete employee
   const onDeleteUser = async (id) => {
     try {
-      const httpReq = http();
+      const httpReq = http(token);
       await httpReq.delete(`/api/users/${id}`);
       messageApi.success("Employee deleted successfully!");
       setNo(no + 1);
